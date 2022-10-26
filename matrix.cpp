@@ -132,3 +132,12 @@ std::ostream& operator<<(std::ostream& os, const Matrix& A) {
     }
     return os;
 }
+
+std::vector<double> operator-(const std::vector<double>& A, const std::vector<double>& B) {
+    std::vector<double> solution;
+    if (A.size() != B.size()) return solution;
+    for (unsigned int i = 0; i < A.size(); i++) {
+        solution.push_back(A[i] - B[i]);
+    }
+    return solution;
+}
