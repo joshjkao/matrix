@@ -6,6 +6,21 @@ Matrix::Matrix() {
 
 }
 
+Matrix::Matrix(int rows_, int cols_):
+rows(rows_), cols(cols_)
+{
+    std::vector<double> temp(cols,0);
+    for (int i = 0; i < rows; i++) {
+        matrix.push_back(temp);
+    }
+}
+
+Matrix::Matrix(std::vector< std::vector<double> > array) {
+    for (unsigned int i = 0; i < array.size(); i++) {
+        this->addRow(array[i]);
+    }
+}
+
 Matrix::~Matrix() {
 
 }
@@ -29,8 +44,8 @@ void Matrix::addRow(std::vector<double> newRow) {
 }
 
 std::vector<double> Matrix::gaussElim(const std::vector<double>& B) {
-    std::vector<double> C = B;
     if (rows != cols) throw std::invalid_argument("eliminate called on invalid matrix");
+    std::vector<double> C = B;
     int n = rows;
     for (int i = 0; i < n; i++) {
         if (matrix[i][i] == 0) {
@@ -62,15 +77,16 @@ std::vector<double> Matrix::gaussElim(const std::vector<double>& B) {
     return solutions;
 }
 
-Matrix transpose(const Matrix& A) { // Only implemented for square matrices
-    Matrix B(A);
-    if (A.rows != A.cols) throw std::invalid_argument("transpose of non-square matrix");
-    for (unsigned int i = 0; i < B.rows; i++) {
-        for (unsigned int j = i + 1; j < B.cols; j++) {
-            double temp = B.matrix[i][j];
-            B.matrix[i][j] = B.matrix[j][i];
-            B.matrix[j][i] = temp;
+Matrix transpose(const Matrix& A) {
+    Matrix B;
+    B.rows = A.cols;
+    B.cols = A.rows;
+    for (unsigned int j = 0; j < A.cols; j++) {
+        std::vector<double> temp;
+        for (unsigned int i = 0; i < A.rows; i++) {
+            temp.push_back(A.matrix[i][j]);
         }
+        B.matrix.push_back(temp);
     }
     return B;
 }
@@ -95,7 +111,7 @@ Matrix multiply(const Matrix& A, const Matrix& B) {
         std::vector<double> row;
         for (unsigned int j = 0; j < B.cols; j++) {
             double temp = 0;
-            for (int k = 0; k < A.rows; k++) {
+            for (int k = 0; k < A.cols; k++) {
                 temp += A.matrix[i][k] * B.matrix[k][j];
             }
             row.push_back(temp);
@@ -104,6 +120,16 @@ Matrix multiply(const Matrix& A, const Matrix& B) {
     }
     C.rows = A.rows;
     C.cols = B.cols;
+    return C;
+}
+
+Matrix multiply(const Matrix& A, double D) {
+    Matrix C(A);
+    for (unsigned int i = 0; i < A.rows; i++) {
+        for (unsigned int j = 0; j < A.cols; j++) {
+            C.matrix[i][j] = A.matrix[i][j]*D;
+        }
+    }
     return C;
 }
 
@@ -117,8 +143,11 @@ std::vector<double> operator*(const Matrix& A, const std::vector<double>& vec) {
 }
 
 Matrix operator*(const Matrix& A, const Matrix& B) {
-    Matrix C = multiply(A, B);
-    return C;
+    return multiply(A, B);
+}
+
+Matrix operator*(const Matrix& A, double D) {
+    return multiply(A, D);
 }
 
 std::ostream& operator<<(std::ostream& os, const Matrix& A) {
@@ -131,13 +160,4 @@ std::ostream& operator<<(std::ostream& os, const Matrix& A) {
         os << ">" << std::endl;
     }
     return os;
-}
-
-std::vector<double> operator-(const std::vector<double>& A, const std::vector<double>& B) {
-    std::vector<double> solution;
-    if (A.size() != B.size()) return solution;
-    for (unsigned int i = 0; i < A.size(); i++) {
-        solution.push_back(A[i] - B[i]);
-    }
-    return solution;
 }
